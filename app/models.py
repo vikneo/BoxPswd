@@ -1,7 +1,8 @@
 from typing import List
+
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.types import LargeBinary, String, Integer
+from sqlalchemy.types import Integer, LargeBinary, String
 
 
 class Base(DeclarativeBase):
@@ -44,7 +45,9 @@ class BoxPass(Base):
     link: Mapped[str] = mapped_column(String(500), nullable=False)
     login: Mapped[str] = mapped_column(String(100), nullable=True)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="CASCADE")
+    )
     user: Mapped[User] = relationship(back_populates="boxpasses")
 
     def __repr__(self) -> str:

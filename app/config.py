@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).parent.parent / dir_db
 BASE_DIR.mkdir(exist_ok=True, parents=True)
 BASE_URI = BASE_DIR / str(Settings.DB_NAME)
 
-engine = create_engine(f"{Settings.DB_HOST}:///{BASE_URI}")
+_engine = create_engine(f"{Settings.DB_HOST}:///{BASE_URI}")
 
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=_engine)
 session = Session()

@@ -1,27 +1,27 @@
 from argon2 import PasswordHasher
+from sqlalchemy import engine, exc, inspect, orm
 
-import sqlalchemy as sa
-
+from .config import _engine, session
 from .models import Base, User
-from .config import engine, session
 
 hasher = PasswordHasher()
 
-class Create_app():
+
+class CreateApp:
 
     def __init__(
         self,
-        engin: sa.engine.base.Engine=engine,
-        session: sa.orm.session.Session=session,
-        hasher: PasswordHasher = hasher,
+        engin: engine.base.Engine = _engine,
+        _session: orm.session.Session = session,
+        _hasher: PasswordHasher = hasher,
     ) -> None:
         self.engine = engin
-        self.session = session
-        self.hasher = hasher
+        self.session = _session
+        self.hasher = _hasher
 
-    table_name = sa.inspect(engine).get_table_names()
+    table_name = inspect(_engine).get_table_names()
     if not table_name:
-        Base.metadata.create_all(engine)
+        Base.metadata.create_all(_engine)
 
     def created_user(self, last_name: str, first_name: str, login: str, pswd: str):
         pswd_hash = self.hasher.hash(pswd)
@@ -35,19 +35,18 @@ class Create_app():
                 )
                 _session.add(new_user)
                 _session.commit()
-        except sa.exc.IntegrityError:
+        except exc.IntegrityError:
             print(f"Пользователь с логином {login} - Существует!")
-    
+
     def read_user(self):
         with self.session as _session:
             try:
-                user = _session.query(User).first()
-                return user
+                return _session.query(User).first()
             except AttributeError as err:
                 print(err)
 
-create_app = Create_app()
 
+create_app = CreateApp()
 
 if __name__ == "__main__":
     create_app.created_user("Виктор", "Мартынов", "chens", "qwerty123")
