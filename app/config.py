@@ -13,4 +13,4 @@ BASE_URI = BASE_DIR / str(Settings.DB_NAME)
 _engine = create_engine(f"{Settings.DB_HOST}:///{BASE_URI}")
 
 Session = sessionmaker(bind=_engine)
-session = Session()
+_session = Session()
