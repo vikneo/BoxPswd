@@ -178,3 +178,6 @@ cache
 cache/
 
 media/
+
+database
+database/
