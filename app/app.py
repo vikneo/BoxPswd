@@ -1,3 +1,5 @@
+from typing import Any, Optional
+
 from sqlalchemy import engine, exc, inspect, orm
 
 from .config import _engine, _session
@@ -38,11 +40,12 @@ class CreateApp:
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get("login")} - Существует!")
 
-    def read_user(self):
+    def read_user(self, login: str) -> Optional[User | Any]:
         with self.session as session:
             try:
-                return session.query(User).first()
+                return session.query(User).filter(User.login == login).scalar()
             except AttributeError as err:
+                raise
                 print(err)
 
 
@@ -56,5 +59,5 @@ if __name__ == "__main__":
         "password": "qwe123",
     }
     create_app.created_user(data)
-    _user = create_app.read_user()
+    _user = create_app.read_user("chens")
     print(_user)

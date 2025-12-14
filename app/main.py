@@ -3,6 +3,8 @@ import tkinter as tk
 from typing import Dict
 
 from .app import create_app
+from .encrypt import is_valid_hash
+from .models import User
 
 
 class Window:
@@ -22,12 +24,21 @@ class Window:
         self.window.resizable(width=False, height=False)
         self.window.title("Личный сейф")
 
+    def __dialog_window__(self) -> tk.Toplevel:
+        dialog = tk.Toplevel()
+        dialog.title("Получить доступ")
+        dialog.geometry("330x250")
+        dialog.resizable(False, False)
+        dialog.transient(self.window)  # Делает окно зависимым от главного
+        dialog.grab_set()  # Блокирует взаимодействие с главным окном
+        return dialog
+
     def mainloop(self):
         self.__screen_pos__()
         self.window.mainloop()
 
 
-class User(Window):
+class Users(Window):
 
     def __init__(self):
         super().__init__()
@@ -35,10 +46,10 @@ class User(Window):
         self.last_name: tk.Entry = tk.Entry(self.window, width=25)
         self.login: tk.Entry = tk.Entry(self.window, width=25)
         self.password: tk.Entry = tk.Entry(self.window, width=25)
-        self.user = None
+        self.user: User
 
 
-class BoxPassword(User):
+class BoxPassword(Users):
 
     def __init__(self):
         super().__init__()
@@ -47,20 +58,8 @@ class BoxPassword(User):
 
         self.run()
 
-    def __auth__(self) -> bool:
-        """Проверка авторизации пользователя"""
-        return bool(self.app.read_user())
-
-    def dialog_window_auth_or_reg(self):
-        # Создаём новое окно
-        dialog = tk.Toplevel()
-        dialog.title("Получить доступ")
-        dialog.geometry("330x250")
-        dialog.resizable(False, False)
-        dialog.transient(self.window)  # Делает окно зависимым от главного
-        dialog.grab_set()  # Блокирует взаимодействие с главным окном
-
-        # Метки и поля ввода
+    def register_dialog_window(self) -> None:
+        dialog = self.__dialog_window__()
         tk.Label(dialog, text="Имя:").grid(
             row=0, column=0, padx=10, pady=10, sticky="w"
         )
@@ -90,6 +89,7 @@ class BoxPassword(User):
             text="Войти",
             bg="blue",
             fg="white",
+            command=lambda: self.auth_user(dialog),
         )
         save_btn.grid(row=4, column=0, padx=10, pady=10, sticky="w")
         create_btn = tk.Button(
@@ -101,6 +101,22 @@ class BoxPassword(User):
         )
         create_btn.grid(row=4, column=1, padx=10, pady=10, sticky="e")
 
+    def auth_user(self, dialog: tk.Toplevel | None) -> None:
+        self.data.update(
+            login=self.login.get(),
+            password=self.password.get(),
+        )
+        self.user = create_app.read_user(self.data["login"])  # type: ignore
+        if self.user is None:
+            self.login.config(bg="red", fg="white")
+        elif is_valid_hash(self.user.password, self.data["password"]):
+            self.data = {}
+            self.run()
+            if dialog:
+                dialog.destroy()
+        else:
+            self.password.config(bg="red", fg="white")
+
     def create_user(self, dialog: tk.Toplevel):
         self.data.update(
             first_name=self.first_name.get() or "",
@@ -110,19 +126,23 @@ class BoxPassword(User):
         )
         try:
             create_app.created_user(self.data)
+            self.user = create_app.read_user(self.data["login"])  # type: ignore
             dialog.destroy()
+            self.data = {}
         except sqlite3.IntegrityError:
-            pass
-            self.dialog_window_auth_or_reg()
+            self.register_dialog_window()
         self.run()
 
     def run(self) -> None:
-        if self.__auth__():
-            login = create_app.read_user()
-            tk.Label(self.window, text=f"Welcome - {login.login.capitalize()}").pack()
-            self.window.title(self.window.title() + f" - {login.login.capitalize()}")
-        else:
-            self.dialog_window_auth_or_reg()
+        if self.user is None:
+            self.register_dialog_window()
+        if self.user:
+            tk.Label(
+                self.window, text=f"Welcome - {self.user.login.capitalize()}"
+            ).pack()
+            self.window.title(
+                self.window.title() + f" - {self.user.login.capitalize()}"
+            )
 
 
 rout = BoxPassword()
