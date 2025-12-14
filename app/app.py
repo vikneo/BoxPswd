@@ -19,20 +19,24 @@ class CreateApp:
     if not table_name:
         Base.metadata.create_all(_engine)
 
-    def created_user(self, last_name: str, first_name: str, login: str, pswd: str):
-        hash_p = hash_password(pswd)
+    def created_user(self, data_user: dict) -> None:
+        password = data_user.get("password")
+        if not password:
+            raise ValueError("Пароль должен быть не пустой")
+
+        hash_p = hash_password(password)
         with self.session as session:
             try:
                 new_user = User(
-                    last_name=last_name,
-                    first_name=first_name,
-                    login=login,
+                    last_name=data_user.get("last_name"),
+                    first_name=data_user.get("first_name"),
+                    login=data_user.get("login"),
                     password=hash_p,
                 )
                 session.add(new_user)
                 session.commit()
             except exc.IntegrityError:
-                print(f"Пользователь с логином {login} - Существует!")
+                print(f"Пользователь с логином {data_user.get("login")} - Существует!")
 
     def read_user(self):
         with self.session as session:
@@ -45,6 +49,12 @@ class CreateApp:
 create_app = CreateApp()
 
 if __name__ == "__main__":
-    create_app.created_user("Виктор", "Мартынов", "chens", "qwerty123")
+    data = {
+        "first_name": "",
+        "last_name": "",
+        "login": "chens",
+        "password": "qwe123",
+    }
+    create_app.created_user(data)
     _user = create_app.read_user()
     print(_user)
