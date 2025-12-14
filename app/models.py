@@ -23,8 +23,8 @@ class User(Base):
 
     __tablename__ = "users"
 
-    first_name: Mapped[str] = mapped_column(String(100), nullable=False)
-    last_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    first_name: Mapped[str] = mapped_column(String(100), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(100), nullable=True)
     login: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
     boxpasses: Mapped[List["BoxPass"]] = relationship(
