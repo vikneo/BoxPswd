@@ -134,15 +134,17 @@ class BoxPassword(Users):
         self.run()
 
     def run(self) -> None:
-        if self.user is None:
+        try:
+            if self.user:
+                tk.Label(
+                    self.window, text=f"Welcome - {self.user.login.capitalize()}"
+                ).pack()
+                self.window.title(
+                    self.window.title() + f" - {self.user.login.capitalize()}"
+                )
+        except AttributeError as err:
             self.register_dialog_window()
-        if self.user:
-            tk.Label(
-                self.window, text=f"Welcome - {self.user.login.capitalize()}"
-            ).pack()
-            self.window.title(
-                self.window.title() + f" - {self.user.login.capitalize()}"
-            )
+            print(err)
 
 
 rout = BoxPassword()
