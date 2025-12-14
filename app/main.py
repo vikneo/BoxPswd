@@ -31,10 +31,10 @@ class User(Window):
 
     def __init__(self):
         super().__init__()
-        self.first_name = tk.Entry(self.window, width=25)
-        self.last_name = tk.Entry(self.window, width=25)
-        self.login = tk.Entry(self.window, width=25)
-        self.password = tk.Entry(self.window, width=25)
+        self.first_name: tk.Entry = tk.Entry(self.window, width=25)
+        self.last_name: tk.Entry = tk.Entry(self.window, width=25)
+        self.login: tk.Entry = tk.Entry(self.window, width=25)
+        self.password: tk.Entry = tk.Entry(self.window, width=25)
         self.user = None
 
 
