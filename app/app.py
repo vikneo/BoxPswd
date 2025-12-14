@@ -38,7 +38,7 @@ class CreateApp:
                 session.add(new_user)
                 session.commit()
             except exc.IntegrityError:
-                print(f"Пользователь с логином {data_user.get("login")} - Существует!")
+                print(f"Пользователь с логином {data_user.get('login')} - Существует!")
 
     def read_user(self, login: str) -> Optional[User | Any]:
         with self.session as session:
