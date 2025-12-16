@@ -34,11 +34,11 @@ class Window:
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
 
-    def __dialog_window__(self, action: str) -> tk.Toplevel:
+    def __dialog_window__(self, action: str, height: str = "145") -> tk.Toplevel:
         dialog = tk.Toplevel()
         dialog.title(action)
         dialog.transient(self.window)
-        dialog.geometry("320x145-1000+140")
+        dialog.geometry(f"320x{height}-1000+140")
         dialog.resizable(False, False)
         dialog.grab_set()
         dialog.focus_set()
@@ -53,10 +53,11 @@ class Users(Window):
 
     def __init__(self):
         super().__init__()
-        self.first_name: tk.Entry = tk.Entry(self.window, width=25)
-        self.last_name: tk.Entry = tk.Entry(self.window, width=25)
+        self.link: tk.Entry = tk.Entry(self.window, width=25)
         self.login: tk.Entry = tk.Entry(self.window, width=25)
         self.password: tk.Entry = tk.Entry(self.window, width=25)
+        self.phone: tk.Entry = tk.Entry(self.window, width=25)
+        self.pincode: tk.Entry = tk.Entry(self.window, width=25)
         self.user = None
 
 
@@ -73,7 +74,7 @@ class BoxPassword(Users, Window):
         self.content_frame = tk.Frame(
             self.window, width=500, height=700, bd=2, bg="#B8B6B6"
         )
-        self.content_frame.grid(row=0, column=1, pady=10, sticky="n")
+        self.content_frame.grid(row=0, column=1, padx=10, pady=10, sticky="n")
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
@@ -125,14 +126,58 @@ class BoxPassword(Users, Window):
         )
         try:
             if self.user:
+                add_button = tk.Button(
+                    self.side_bar_frame,
+                    text="Добавить пароль",
+                    bg="#A1AAA2",
+                    command=lambda: self.add_password_dialog_window("Добавить пароль"),
+                )
+                add_button.grid(
+                    row=2, column=1, ipadx=22, ipady=2, padx=3, pady=6, sticky="n"
+                )
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
         except AttributeError as err:
             print(err)
 
-    def out_user(self):
-        self.user = None  # type: ignore
-        self.window.title("Личный сейф")
-        self.run()
+    def add_password_dialog_window(self, action: str) -> None:
+        dialog = self.__dialog_window__(action=action, height="290")
+        tk.Label(dialog, text="Сайт:").grid(
+            row=0, column=0, padx=10, pady=10, sticky="w"
+        )
+        self.link = tk.Entry(dialog, width=25)
+        self.link.grid(row=0, column=1, columnspan=3, padx=10, pady=10)
+
+        tk.Label(dialog, text="Телефон:").grid(
+            row=1, column=0, padx=10, pady=10, sticky="w"
+        )
+        self.phone = tk.Entry(dialog, width=25)
+        self.phone.grid(row=1, column=1, columnspan=3, padx=10, pady=10)
+
+        tk.Label(dialog, text="Пин-код:").grid(
+            row=2, column=0, padx=10, pady=10, sticky="w"
+        )
+        self.pincode = tk.Entry(dialog, width=25)
+        self.pincode.grid(row=2, column=1, columnspan=3, padx=10, pady=10)
+
+        tk.Label(dialog, text="Логин:").grid(
+            row=3, column=0, padx=10, pady=10, sticky="w"
+        )
+        self.login = tk.Entry(dialog, width=25)
+        self.login.grid(row=3, column=1, columnspan=3, padx=10, pady=10)
+
+        tk.Label(dialog, text="Пароль:").grid(
+            row=4, column=0, padx=10, pady=10, sticky="w"
+        )
+        self.password = tk.Entry(dialog, width=25)
+        self.password.grid(row=4, column=1, columnspan=3, padx=10, pady=10)
+
+        btn = tk.Button(
+            dialog,
+            text="Добавить пароль",
+            bg="#A1AAA2",
+            command=lambda: self.created_boxpswd(dialog),
+        )
+        btn.grid(row=5, column=1, padx=10, pady=10, sticky="we")
 
     def register_dialog_window(self, action: str) -> None:
         dialog = self.__dialog_window__(action=action)
@@ -179,16 +224,37 @@ class BoxPassword(Users, Window):
         else:
             self.password.config(bg="red", fg="white")
 
+    def out_user(self):
+        self.user = None  # type: ignore
+        self.window.title("Личный сейф")
+        self.content_frame.grid_forget()
+        self.run()
+
     def create_user(self, dialog: tk.Toplevel):
         self.data.update(
-            first_name=self.first_name.get() or "",
-            last_name=self.last_name.get() or "",
             login=self.login.get(),
             password=self.password.get(),
         )
         try:
             create_app.created_user(self.data)  # type: ignore
             self.user = create_app.get_user(self.data["login"])  # type: ignore
+            dialog.destroy()
+            self.data = {}
+        except sqlite3.IntegrityError:
+            pass
+        self.run()
+
+    def created_boxpswd(self, dialog: tk.Toplevel):
+        self.data.update(
+            link=self.link.get(),
+            login=self.login.get(),
+            password=self.password.get(),
+            phone=self.phone.get(),
+            pincode=self.pincode.get(),
+            user_id=self.user.id,  # type: ignore
+        )
+        try:
+            create_app.created_password(self.data)
             dialog.destroy()
             self.data = {}
         except sqlite3.IntegrityError:
