@@ -2,7 +2,7 @@ from sqlalchemy import engine, exc, inspect, orm
 
 from .config import _engine, _session
 from .encrypt import hash_password
-from .models import Base, User
+from .models import Base, BoxPass, User
 
 
 class CreateApp:
@@ -37,6 +37,22 @@ class CreateApp:
                 session.commit()
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get('login')} - Существует!")
+
+    def created_password(self, data_password: dict) -> None:
+        with self.session as session:
+            try:
+                boxpswd = BoxPass(
+                    link=data_password.get("link"),
+                    login=data_password.get("login"),
+                    password=data_password.get("password"),
+                    phone=data_password.get("phone"),
+                    pincode=data_password.get("pincode"),
+                    user_id=data_password.get("user_id"),
+                )
+                session.add(boxpswd)
+                session.commit()
+            except exc.IntegrityError as err:
+                print(err)
 
     def get_user(self, login: str):
         with self.session as session:
