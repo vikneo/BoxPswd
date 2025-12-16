@@ -14,10 +14,9 @@ class Window:
         self.width = self.window.winfo_screenwidth()
         self.height = self.window.winfo_screenheight()
         self.button = tk.Button()
-        self.lable = tk.Label()
+        self.label = tk.Label()
         self.side_bar_frame = tk.Frame()
         self.content_frame = tk.Frame()
-        print(f"Init window - {self.window}")
 
     def get_window(self) -> tk.Tk:
         self.window = tk.Tk()
@@ -28,10 +27,9 @@ class Window:
         Установка разрешений окна и позиции на экране.
         Запрет на изменение размеров окна.
         """
-        print(f"Created window - {self.window.client()}")
         self.width = self.width // 6
         self.height = (self.height * 0) + 10
-        self.window.geometry(f"855x600-{self.width}+{self.height}")
+        self.window.geometry(f"900x600-{self.width}+{self.height}")
         self.window.resizable(width=False, height=False)
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
@@ -40,7 +38,7 @@ class Window:
         dialog = tk.Toplevel()
         dialog.title(action)
         dialog.transient(self.window)
-        dialog.geometry(f"320x145-1000+140")
+        dialog.geometry("320x145-1000+140")
         dialog.resizable(False, False)
         dialog.grab_set()
         dialog.focus_set()
@@ -70,37 +68,49 @@ class BoxPassword(Users, Window):
         self.data: Dict[str, str] = {}
 
         self.run()
-    
-    def content_field(self) -> None:
-        self.content_frame = tk.Frame(self.window, width=500, height=700, bd=2, bg="#B8B6B6")
-        self.content_frame.grid(row=0, column=1, pady=10, sticky="n")
 
+    def content_field(self) -> None:
+        self.content_frame = tk.Frame(
+            self.window, width=500, height=700, bd=2, bg="#B8B6B6"
+        )
+        self.content_frame.grid(row=0, column=1, pady=10, sticky="n")
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
                 self.content_frame, text=nav_menu, bg="#B8B6B6", font="Arial, 9"
-                ).grid(row=0, column=i, ipadx=2, padx=40, pady=3, sticky="n")
-        
+            ).grid(row=0, column=i, ipady=2, ipadx=2, padx=40, pady=1, sticky="n")
+
+        tag_hr = tk.LabelFrame(self.content_frame)
+        tag_hr.grid(row=1, columnspan=5, sticky="we")
+
         if self.user:
             items = create_app.get_items(self.user.login)
+            row = 3
             for item in items:
                 fields = BoxPass.__table__.columns.keys()
                 for i, field in enumerate(fields):
                     value = getattr(item, field)
+                    if field in ["user_id", "id"]:
+                        continue
                     tk.Label(
-                        self.content_frame, text=value, bg="#B8B6B6", font="Arial, 9"
-                    ).grid(row=item.id, column=i, ipady=10, padx=40, pady=3)
-        
-    
+                        self.content_frame, text=value, font="Arial, 9", bg="#DCDCDC"
+                    ).grid(row=item.id + 1, column=i, pady=3, ipadx=14, sticky="we")
+
+                tag_hr = tk.LabelFrame(self.content_frame)
+                tag_hr.grid(row=row, columnspan=5, sticky="we")
+                row += 1
+
     def sidebar_field(self) -> None:
-        self.side_bar_frame = tk.Frame(self.window, width=200, height=700, bd=2, bg="#D3D3D3")
+        self.side_bar_frame = tk.Frame(
+            self.window, width=200, height=700, bd=2, bg="#D3D3D3"
+        )
         self.side_bar_frame.grid(row=0, column=0, pady=5, sticky="n")
 
         inp_button = tk.Button(
             self.side_bar_frame,
             text="Войти",
             bg="#D6A3A3",
-            command=lambda: self.register_dialog_window("Авторизация")
+            command=lambda: self.register_dialog_window("Авторизация"),
         )
         inp_button.grid(row=0, column=1, ipadx=58, ipady=2, padx=2, pady=1, sticky="n")
 
@@ -108,9 +118,11 @@ class BoxPassword(Users, Window):
             self.side_bar_frame,
             text="Создать пользователя",
             bg="#A1AAA2",
-            command=lambda: self.register_dialog_window("Регистрация")
+            command=lambda: self.register_dialog_window("Регистрация"),
         )
-        create_button.grid(row=1, column=1, ipadx=6, ipady=2, padx=3, pady=6, sticky="n")
+        create_button.grid(
+            row=1, column=1, ipadx=6, ipady=2, padx=3, pady=6, sticky="n"
+        )
         try:
             if self.user:
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
@@ -120,7 +132,6 @@ class BoxPassword(Users, Window):
     def out_user(self):
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
-        self.sidebar_field()
         self.run()
 
     def register_dialog_window(self, action: str) -> None:
@@ -149,10 +160,8 @@ class BoxPassword(Users, Window):
             self.button.configure(command=lambda: self.auth_user(dialog))
         else:
             self.button.configure(
-                text="Создать",
-                command=lambda: self.create_user(dialog)
-                )
-
+                text="Создать", command=lambda: self.create_user(dialog)
+            )
 
     def auth_user(self, dialog: tk.Toplevel | None) -> None:
         self.data.update(
@@ -191,9 +200,7 @@ class BoxPassword(Users, Window):
         self.content_field()
         try:
             if self.user:
-                self.window.title(
-                    f"Личный сейф - {self.user.login.capitalize()}"
-                )
+                self.window.title(f"Личный сейф - {self.user.login.capitalize()}")
         except AttributeError as err:
             print(err)
 

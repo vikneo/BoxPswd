@@ -1,10 +1,8 @@
-from typing import Any, Optional
-
-from sqlalchemy import engine, exc, inspect, orm, select
+from sqlalchemy import engine, exc, inspect, orm
 
 from .config import _engine, _session
 from .encrypt import hash_password
-from .models import Base, User, BoxPass
+from .models import Base, User
 
 
 class CreateApp:
@@ -40,18 +38,19 @@ class CreateApp:
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get('login')} - Существует!")
 
-    def get_user(self, login: str) -> Optional[User | Any]:
+    def get_user(self, login: str):
         with self.session as session:
             try:
                 return session.query(User).filter(User.login == login).scalar()
             except AttributeError as err:
                 print(err)
-    
+
     def get_items(self, login: str):
         with self.session as session:
             try:
                 user = session.query(User).filter(User.login == login).first()
-                return user.boxpasses
+                if user:
+                    return user.boxpasses
             except AttributeError as err:
                 print(err)
 

@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.types import Integer, LargeBinary, String
+from sqlalchemy.types import Integer, String
 
 
 class Base(DeclarativeBase):
