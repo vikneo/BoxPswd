@@ -1,28 +1,35 @@
 import sqlite3
 import tkinter as tk
-from typing import Dict, List
+from typing import Dict
 
 from .app import create_app
 from .config import navbar_list
 from .encrypt import is_valid_hash
+from .models import BoxPass
 
 
 class Window:
     def __init__(self):
-        self.window: tk.Tk = tk.Tk()
+        self.window: tk.Tk = self.get_window()
         self.width = self.window.winfo_screenwidth()
         self.height = self.window.winfo_screenheight()
         self.button = tk.Button()
         self.lable = tk.Label()
         self.side_bar_frame = tk.Frame()
         self.content_frame = tk.Frame()
+        print(f"Init window - {self.window}")
+
+    def get_window(self) -> tk.Tk:
+        self.window = tk.Tk()
+        return self.window
 
     def __screen_pos__(self):
         """
         Установка разрешений окна и позиции на экране.
         Запрет на изменение размеров окна.
         """
-        self.width = self.width // 4
+        print(f"Created window - {self.window.client()}")
+        self.width = self.width // 6
         self.height = (self.height * 0) + 10
         self.window.geometry(f"855x600-{self.width}+{self.height}")
         self.window.resizable(width=False, height=False)
@@ -32,10 +39,11 @@ class Window:
     def __dialog_window__(self, action: str) -> tk.Toplevel:
         dialog = tk.Toplevel()
         dialog.title(action)
-        dialog.geometry(f"290x145-400+140")
-        dialog.resizable(False, False)
         dialog.transient(self.window)
+        dialog.geometry(f"320x145-1000+140")
+        dialog.resizable(False, False)
         dialog.grab_set()
+        dialog.focus_set()
         return dialog
 
     def mainloop(self):
@@ -65,18 +73,23 @@ class BoxPassword(Users, Window):
     
     def content_field(self) -> None:
         self.content_frame = tk.Frame(self.window, width=500, height=700, bd=2, bg="#B8B6B6")
-        self.content_frame.grid(row=0, column=1, pady=9, sticky="n")
+        self.content_frame.grid(row=0, column=1, pady=10, sticky="n")
 
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
-                self.content_frame, text=nav_menu, bg="#B8B6B6", font=("Arial, 9")
-                ).grid(row=0, column=i, ipadx=2, padx=43, pady=2, sticky="n")
+                self.content_frame, text=nav_menu, bg="#B8B6B6", font="Arial, 9"
+                ).grid(row=0, column=i, ipadx=2, padx=40, pady=3, sticky="n")
         
         if self.user:
             items = create_app.get_items(self.user.login)
             for item in items:
-                print(item)
+                fields = BoxPass.__table__.columns.keys()
+                for i, field in enumerate(fields):
+                    value = getattr(item, field)
+                    tk.Label(
+                        self.content_frame, text=value, bg="#B8B6B6", font="Arial, 9"
+                    ).grid(row=item.id, column=i, ipady=10, padx=40, pady=3)
         
     
     def sidebar_field(self) -> None:
@@ -89,7 +102,7 @@ class BoxPassword(Users, Window):
             bg="#D6A3A3",
             command=lambda: self.register_dialog_window("Авторизация")
         )
-        inp_button.grid(row=0, column=1, ipadx=54, ipady=2, padx=2, pady=3, sticky="n")
+        inp_button.grid(row=0, column=1, ipadx=58, ipady=2, padx=2, pady=1, sticky="n")
 
         create_button = tk.Button(
             self.side_bar_frame,
@@ -97,7 +110,7 @@ class BoxPassword(Users, Window):
             bg="#A1AAA2",
             command=lambda: self.register_dialog_window("Регистрация")
         )
-        create_button.grid(row=1, column=1, ipadx=10, ipady=2, padx=3, pady=3, sticky="n")
+        create_button.grid(row=1, column=1, ipadx=6, ipady=2, padx=3, pady=6, sticky="n")
         try:
             if self.user:
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
