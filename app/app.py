@@ -1,6 +1,6 @@
 from typing import Any, Optional
 
-from sqlalchemy import engine, exc, inspect, orm
+from sqlalchemy import engine, exc, inspect, orm, select
 
 from .config import _engine, _session
 from .encrypt import hash_password
@@ -45,14 +45,13 @@ class CreateApp:
             try:
                 return session.query(User).filter(User.login == login).scalar()
             except AttributeError as err:
-                raise
                 print(err)
     
     def get_items(self, login: str):
         with self.session as session:
             try:
-
-                return session.query(BoxPass).all()
+                user = session.query(User).filter(User.login == login).first()
+                return user.boxpasses
             except AttributeError as err:
                 print(err)
 
