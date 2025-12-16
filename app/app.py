@@ -4,7 +4,7 @@ from sqlalchemy import engine, exc, inspect, orm
 
 from .config import _engine, _session
 from .encrypt import hash_password
-from .models import Base, User
+from .models import Base, User, BoxPass
 
 
 class CreateApp:
@@ -40,12 +40,20 @@ class CreateApp:
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get('login')} - Существует!")
 
-    def read_user(self, login: str) -> Optional[User | Any]:
+    def get_user(self, login: str) -> Optional[User | Any]:
         with self.session as session:
             try:
                 return session.query(User).filter(User.login == login).scalar()
             except AttributeError as err:
                 raise
+                print(err)
+    
+    def get_items(self, login: str):
+        with self.session as session:
+            try:
+
+                return session.query(BoxPass).all()
+            except AttributeError as err:
                 print(err)
 
 
@@ -59,5 +67,5 @@ if __name__ == "__main__":
         "password": "qwe123",
     }
     create_app.created_user(data)
-    _user = create_app.read_user("chens")
+    _user = create_app.get_user("chens")
     print(_user)

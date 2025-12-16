@@ -1,8 +1,9 @@
 import sqlite3
 import tkinter as tk
-from typing import Dict
+from typing import Dict, List
 
 from .app import create_app
+from .config import navbar_list
 from .encrypt import is_valid_hash
 
 
@@ -23,14 +24,14 @@ class Window:
         """
         self.width = self.width // 4
         self.height = (self.height * 0) + 10
-        self.window.geometry(f"673x701-{self.width}+{self.height}")
+        self.window.geometry(f"855x600-{self.width}+{self.height}")
         self.window.resizable(width=False, height=False)
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
 
-    def __dialog_window__(self) -> tk.Toplevel:
+    def __dialog_window__(self, action: str) -> tk.Toplevel:
         dialog = tk.Toplevel()
-        dialog.title("Авторизация / Регистрация")
+        dialog.title(action)
         dialog.geometry(f"290x145-400+140")
         dialog.resizable(False, False)
         dialog.transient(self.window)
@@ -62,80 +63,90 @@ class BoxPassword(Users, Window):
 
         self.run()
     
-    def pos_frame(self):
+    def content_field(self) -> None:
+        self.content_frame = tk.Frame(self.window, width=500, height=700, bd=2, bg="#B8B6B6")
+        self.content_frame.grid(row=0, column=1, pady=9, sticky="n")
+
+
+        for i, nav_menu in enumerate(navbar_list):
+            tk.Label(
+                self.content_frame, text=nav_menu, bg="#B8B6B6", font=("Arial, 9")
+                ).grid(row=0, column=i, ipadx=2, padx=43, pady=2, sticky="n")
+        
+        if self.user:
+            items = create_app.get_items(self.user.login)
+            for item in items:
+                print(item)
+        
+    
+    def sidebar_field(self) -> None:
         self.side_bar_frame = tk.Frame(self.window, width=200, height=700, bd=2, bg="#D3D3D3")
         self.side_bar_frame.grid(row=0, column=0, pady=5, sticky="n")
-        self.content_frame = tk.Frame(self.window, width=500, height=700, bd=2, bg="#808080")
-        self.content_frame.grid(row=0, column=1, sticky="w")
 
-        self.lable = tk.Label(
-            self.side_bar_frame, text="Доступ", bg="#A9A9A9", font="Arial, 15"
-            )
-        self.lable.grid(row=0, column=0, ipadx=54, pady=3)
         inp_button = tk.Button(
-            self.side_bar_frame, text="@", bg="#A52A2A", command=self.register_dialog_window
+            self.side_bar_frame,
+            text="Войти",
+            bg="#D6A3A3",
+            command=lambda: self.register_dialog_window("Авторизация")
         )
-        inp_button.grid(row=0, column=1, ipadx=3, ipady=2, padx=2, pady=3, sticky="n")
+        inp_button.grid(row=0, column=1, ipadx=54, ipady=2, padx=2, pady=3, sticky="n")
 
-        self.lable = tk.Label(
-            self.side_bar_frame, text="Добавить", bg="#A9A9A9", font="Arial, 16"
-            )
-        self.lable.grid(row=1, column=0, ipadx=40, pady=3)
         create_button = tk.Button(
-            self.side_bar_frame, text="#", bg="#1CB624", command=self.register_dialog_window
+            self.side_bar_frame,
+            text="Создать пользователя",
+            bg="#A1AAA2",
+            command=lambda: self.register_dialog_window("Регистрация")
         )
-        create_button.grid(row=1, column=1, ipadx=5, ipady=2, padx=3, pady=3, sticky="n")
+        create_button.grid(row=1, column=1, ipadx=10, ipady=2, padx=3, pady=3, sticky="n")
         try:
             if self.user:
-                inp_button.config(bg="#00FF00", pady=-2, command=self.out_user)
+                inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
         except AttributeError as err:
             print(err)
-        
-        # self.window.grid_columnconfigure(0, weight=1)
-        # self.window.grid_columnconfigure(1, weight=1)
 
     def out_user(self):
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
-        self.pos_frame()
+        self.sidebar_field()
+        self.run()
 
-    def register_dialog_window(self) -> None:
-        dialog = self.__dialog_window__()
+    def register_dialog_window(self, action: str) -> None:
+        dialog = self.__dialog_window__(action=action)
         tk.Label(dialog, text="Логин:").grid(
-            row=2, column=0, padx=10, pady=10, sticky="w"
+            row=0, column=0, padx=10, pady=10, sticky="w"
         )
         self.login = tk.Entry(dialog, width=25)
-        self.login.grid(row=2, column=1, columnspan=3, padx=10, pady=10)
+        self.login.grid(row=0, column=1, columnspan=3, padx=10, pady=10)
 
         tk.Label(dialog, text="Пароль:").grid(
-            row=3, column=0, padx=10, pady=10, sticky="w"
+            row=1, column=0, padx=10, pady=10, sticky="w"
         )
         self.password = tk.Entry(dialog, width=25)
-        self.password.grid(row=3, column=1, columnspan=3, padx=10, pady=10)
+        self.password.grid(row=1, column=1, columnspan=3, padx=10, pady=10)
 
         self.button = tk.Button(
             dialog,
             text="Войти",
             bg="blue",
             fg="white",
-            command=lambda: self.auth_user(dialog),
         )
-        self.button.grid(row=4, column=0, padx=15, pady=10, sticky="w")
-        self.button = tk.Button(
-            dialog,
-            text="Создать доступ",
-            bg="grey",
-            fg="white",
-            command=lambda: self.create_user(dialog),
-        )
-        self.button.grid(row=4, column=1, columnspan=3, padx=10, pady=10, sticky="e")
+        self.button.grid(row=2, column=1, ipadx=15, padx=15, pady=10, sticky="we")
+
+        if action.lower() == "авторизация":
+            self.button.configure(command=lambda: self.auth_user(dialog))
+        else:
+            self.button.configure(
+                text="Создать",
+                command=lambda: self.create_user(dialog)
+                )
+
 
     def auth_user(self, dialog: tk.Toplevel | None) -> None:
         self.data.update(
             login=self.login.get(),
             password=self.password.get(),
         )
-        self.user = create_app.read_user(self.data["login"])  # type: ignore
+        self.user = create_app.get_user(self.data["login"])  # type: ignore
         if self.user is None:
             self.login.config(bg="red", fg="white")
         elif is_valid_hash(self.user.password, self.data["password"]):
@@ -155,22 +166,22 @@ class BoxPassword(Users, Window):
         )
         try:
             create_app.created_user(self.data)  # type: ignore
-            self.user = create_app.read_user(self.data["login"])  # type: ignore
+            self.user = create_app.get_user(self.data["login"])  # type: ignore
             dialog.destroy()
             self.data = {}
         except sqlite3.IntegrityError:
-            self.register_dialog_window()
+            pass
         self.run()
 
     def run(self) -> None:
-        self.pos_frame()
+        self.sidebar_field()
+        self.content_field()
         try:
             if self.user:
                 self.window.title(
-                    self.window.title() + f" - {self.user.login.capitalize()}"
+                    f"Личный сейф - {self.user.login.capitalize()}"
                 )
         except AttributeError as err:
-            self.register_dialog_window()
             print(err)
 
 
