@@ -67,6 +67,7 @@ class BoxPassword(Users, Window):
         super().__init__()
         self.app = create_app
         self.data: Dict[str, str] = {}
+        self.add_btn = tk.Button()
 
         self.run()
 
@@ -126,13 +127,13 @@ class BoxPassword(Users, Window):
         )
         try:
             if self.user:
-                add_button = tk.Button(
+                self.add_btn = tk.Button(
                     self.side_bar_frame,
                     text="Добавить пароль",
                     bg="#A1AAA2",
                     command=lambda: self.add_password_dialog_window("Добавить пароль"),
                 )
-                add_button.grid(
+                self.add_btn.grid(
                     row=2, column=1, ipadx=22, ipady=2, padx=3, pady=6, sticky="n"
                 )
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
@@ -228,6 +229,7 @@ class BoxPassword(Users, Window):
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
         self.content_frame.grid_forget()
+        self.add_btn.grid_forget()
         self.run()
 
     def create_user(self, dialog: tk.Toplevel):
