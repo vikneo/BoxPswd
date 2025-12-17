@@ -1,6 +1,6 @@
 import sqlite3
 import tkinter as tk
-from typing import Dict
+from typing import Dict, List
 
 from .app import create_app
 from .config import navbar_list
@@ -10,7 +10,7 @@ from .models import BoxPass
 
 class Window:
     def __init__(self):
-        self.window: tk.Tk = self.get_window()
+        self.window: tk.Tk =tk.Tk()
         self.width = self.window.winfo_screenwidth()
         self.height = self.window.winfo_screenheight()
         self.button = tk.Button()
@@ -27,9 +27,9 @@ class Window:
         Установка разрешений окна и позиции на экране.
         Запрет на изменение размеров окна.
         """
-        self.width = self.width // 6
+        self.width = self.width // 4
         self.height = (self.height * 0) + 10
-        self.window.geometry(f"900x600-{self.width}+{self.height}")
+        self.window.geometry(f"950x600+{self.width}+{self.height}")
         self.window.resizable(width=False, height=False)
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
@@ -53,11 +53,11 @@ class Users(Window):
 
     def __init__(self):
         super().__init__()
-        self.link: tk.Entry = tk.Entry(self.window, width=25)
-        self.login: tk.Entry = tk.Entry(self.window, width=25)
-        self.password: tk.Entry = tk.Entry(self.window, width=25)
-        self.phone: tk.Entry = tk.Entry(self.window, width=25)
-        self.pincode: tk.Entry = tk.Entry(self.window, width=25)
+        self.link: tk.Entry = tk.Entry(width=25)
+        self.login: tk.Entry = tk.Entry(width=25)
+        self.password: tk.Entry = tk.Entry(width=25)
+        self.phone: tk.Entry = tk.Entry(width=25)
+        self.pincode: tk.Entry = tk.Entry(width=25)
         self.user = None
 
 
@@ -67,6 +67,8 @@ class BoxPassword(Users, Window):
         super().__init__()
         self.app = create_app
         self.data: Dict[str, str] = {}
+        self.buttons: List = []
+        self.label_contents: List = []
 
         self.run()
 
@@ -79,27 +81,38 @@ class BoxPassword(Users, Window):
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
                 self.content_frame, text=nav_menu, bg="#B8B6B6", font="Arial, 9"
-            ).grid(row=0, column=i, ipady=2, ipadx=2, padx=40, pady=1, sticky="n")
+            ).grid(row=0, column=i, ipady=2, ipadx=14, padx=40, pady=1, sticky="n")
 
         tag_hr = tk.LabelFrame(self.content_frame)
         tag_hr.grid(row=1, columnspan=5, sticky="we")
 
-        if self.user:
+        try:
             items = create_app.get_items(self.user.login)
-            row = 3
-            for item in items:
-                fields = BoxPass.__table__.columns.keys()
-                for i, field in enumerate(fields):
-                    value = getattr(item, field)
-                    if field in ["user_id", "id"]:
-                        continue
-                    tk.Label(
-                        self.content_frame, text=value, font="Arial, 9", bg="#DCDCDC"
-                    ).grid(row=item.id + 1, column=i, pady=3, ipadx=14, sticky="we")
-
-                tag_hr = tk.LabelFrame(self.content_frame)
-                tag_hr.grid(row=row, columnspan=5, sticky="we")
-                row += 1
+            if self.user:
+                row = 3
+                for item in items:
+                    fields = BoxPass.__table__.columns.keys()
+                    for i, field in enumerate(fields):
+                        text_var = tk.StringVar()
+                        value = getattr(item, field)
+                        text_var.set(value)
+                        if field in ["user_id", "id"]:
+                            continue
+                        if field in ["link", "login", "password"]:
+                            content = tk.Entry(
+                                self.content_frame, textvariable=text_var, state='readonly', readonlybackground="#DCDCDC"
+                            )
+                        else:
+                            content = tk.Label(
+                                self.content_frame, text=value, bg="#DCDCDC"
+                            )
+                        content.grid(row=item.id + 1, column=i, pady=1, ipadx=2, sticky="we")
+                        self.label_contents.append(content)
+                    # tag_hr = tk.LabelFrame(self.content_frame)
+                    # tag_hr.grid(row=row, columnspan=5, sticky="we")
+                    row += 1
+        except:
+            pass
 
     def sidebar_field(self) -> None:
         self.side_bar_frame = tk.Frame(
@@ -113,7 +126,7 @@ class BoxPassword(Users, Window):
             bg="#D6A3A3",
             command=lambda: self.register_dialog_window("Авторизация"),
         )
-        inp_button.grid(row=0, column=1, ipadx=58, ipady=2, padx=2, pady=1, sticky="n")
+        inp_button.grid(row=0, column=1, ipadx=50, ipady=2, padx=2, pady=1, sticky="n")
 
         create_button = tk.Button(
             self.side_bar_frame,
@@ -135,6 +148,7 @@ class BoxPassword(Users, Window):
                 add_button.grid(
                     row=2, column=1, ipadx=22, ipady=2, padx=3, pady=6, sticky="n"
                 )
+                self.buttons.append(add_button)
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
         except AttributeError as err:
             print(err)
@@ -225,6 +239,12 @@ class BoxPassword(Users, Window):
             self.password.config(bg="red", fg="white")
 
     def out_user(self):
+        for btn in self.buttons:
+            btn.grid_forget()
+        
+        for label in self.label_contents:
+            label.grid_forget()
+
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
         self.content_frame.grid_forget()
