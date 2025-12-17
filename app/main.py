@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import sqlite3
 import tkinter as tk
 from typing import Dict, List
@@ -10,17 +12,13 @@ from .models import BoxPass
 
 class Window:
     def __init__(self):
-        self.window: tk.Tk =tk.Tk()
+        self.window: tk.Tk = self.get_window()
         self.width = self.window.winfo_screenwidth()
         self.height = self.window.winfo_screenheight()
         self.button = tk.Button()
         self.label = tk.Label()
         self.side_bar_frame = tk.Frame()
         self.content_frame = tk.Frame()
-
-    def get_window(self) -> tk.Tk:
-        self.window = tk.Tk()
-        return self.window
 
     def __screen_pos__(self):
         """
@@ -43,9 +41,20 @@ class Window:
         dialog.grab_set()
         dialog.focus_set()
         return dialog
+    
+    def get_window(self) -> tk.Tk:
+        self.window = tk.Tk()
+        return self.window
+    
+    def instal_icon(self):
+        path_dir = Path(__file__).parent.parent / "static"
+        icon_file = path_dir / "favicon.png"
+        icon = tk.PhotoImage(file=icon_file)
+        self.window.iconphoto(False, icon)
 
     def mainloop(self):
         self.__screen_pos__()
+        self.instal_icon()
         self.window.mainloop()
 
 
