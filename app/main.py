@@ -201,7 +201,7 @@ class BoxPassword(Users, Window):
             bg="#A1AAA2",
             command=lambda: self.created_boxpswd(dialog),
         )
-        btn.grid(row=5, column=1, padx=10, pady=10, sticky="we")
+        btn.grid(row=5, column=1, columnspan=3, padx=10, pady=10, sticky="we")
 
     def register_dialog_window(self, action: str) -> None:
         dialog = self.__dialog_window__(action=action)
@@ -223,7 +223,7 @@ class BoxPassword(Users, Window):
             bg="blue",
             fg="white",
         )
-        self.button.grid(row=2, column=1, ipadx=15, padx=15, pady=10, sticky="we")
+        self.button.grid(row=2, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we")
 
         if action.lower() == "авторизация":
             self.button.configure(command=lambda: self.auth_user(dialog))
