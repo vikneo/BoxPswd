@@ -118,8 +118,6 @@ class BoxPassword(Users, Window):
                             )
                         content.grid(row=item.id + 1, column=i, pady=1, ipadx=2, sticky="we")
                         self.label_contents.append(content)
-                    # tag_hr = tk.LabelFrame(self.content_frame)
-                    # tag_hr.grid(row=row, columnspan=5, sticky="we")
                     row += 1
         except:
             pass
@@ -257,7 +255,6 @@ class BoxPassword(Users, Window):
 
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
-        self.content_frame.grid_forget()
         self.run()
 
     def create_user(self, dialog: tk.Toplevel):
