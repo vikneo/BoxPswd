@@ -25,9 +25,9 @@ class Window:
         Установка разрешений окна и позиции на экране.
         Запрет на изменение размеров окна.
         """
-        self.width = self.width // 4
+        self.width = self.width // 6
         self.height = (self.height * 0) + 10
-        self.window.geometry(f"950x600+{self.width}+{self.height}")
+        self.window.geometry(f"955x600+{self.width}+{self.height}")
         self.window.resizable(width=False, height=False)
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
@@ -36,8 +36,9 @@ class Window:
         dialog = tk.Toplevel()
         dialog.title(action)
         dialog.transient(self.window)
-        dialog.geometry(f"320x{height}-1000+140")
+        dialog.geometry(f"320x{height}+300+50")
         dialog.resizable(False, False)
+        dialog.configure(background="#D3D3D3")
         dialog.grab_set()
         dialog.focus_set()
         return dialog
@@ -83,13 +84,13 @@ class BoxPassword(Users, Window):
 
     def content_field(self) -> None:
         self.content_frame = tk.Frame(
-            self.window, width=500, height=700, bd=2, bg="#B8B6B6"
+            self.window, width=500, height=700, bd=2, bg="#727272"
         )
         self.content_frame.grid(row=0, column=1, padx=10, pady=10, sticky="n")
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
-                self.content_frame, text=nav_menu, bg="#B8B6B6", font="Arial, 9"
+                self.content_frame, text=nav_menu, bg="#727272", font="Arial, 9", fg="white"
             ).grid(row=0, column=i, ipady=2, ipadx=14, padx=40, pady=1, sticky="n")
 
         tag_hr = tk.LabelFrame(self.content_frame)
@@ -109,11 +110,11 @@ class BoxPassword(Users, Window):
                             continue
                         if field in ["link", "login", "password"]:
                             content = tk.Entry(
-                                self.content_frame, textvariable=text_var, state='readonly', readonlybackground="#DCDCDC"
+                                self.content_frame, textvariable=text_var, state='readonly', readonlybackground="#ECE8E8"
                             )
                         else:
                             content = tk.Label(
-                                self.content_frame, text=value, bg="#DCDCDC"
+                                self.content_frame, text=value, bg="#9B9B9B", fg="white"
                             )
                         content.grid(row=item.id + 1, column=i, pady=1, ipadx=2, sticky="we")
                         self.label_contents.append(content)
@@ -163,32 +164,32 @@ class BoxPassword(Users, Window):
             print(err)
 
     def add_password_dialog_window(self, action: str) -> None:
-        dialog = self.__dialog_window__(action=action, height="290")
-        tk.Label(dialog, text="Сайт:").grid(
+        dialog = self.__dialog_window__(action=action, height="280")
+        tk.Label(dialog, text="Сайт:", bg="#D3D3D3").grid(
             row=0, column=0, padx=10, pady=10, sticky="w"
         )
         self.link = tk.Entry(dialog, width=25)
         self.link.grid(row=0, column=1, columnspan=3, padx=10, pady=10)
 
-        tk.Label(dialog, text="Телефон:").grid(
+        tk.Label(dialog, text="Телефон:", bg="#D3D3D3").grid(
             row=1, column=0, padx=10, pady=10, sticky="w"
         )
         self.phone = tk.Entry(dialog, width=25)
         self.phone.grid(row=1, column=1, columnspan=3, padx=10, pady=10)
 
-        tk.Label(dialog, text="Пин-код:").grid(
+        tk.Label(dialog, text="Пин-код:", bg="#D3D3D3").grid(
             row=2, column=0, padx=10, pady=10, sticky="w"
         )
         self.pincode = tk.Entry(dialog, width=25)
         self.pincode.grid(row=2, column=1, columnspan=3, padx=10, pady=10)
 
-        tk.Label(dialog, text="Логин:").grid(
+        tk.Label(dialog, text="Логин:", bg="#D3D3D3").grid(
             row=3, column=0, padx=10, pady=10, sticky="w"
         )
         self.login = tk.Entry(dialog, width=25)
         self.login.grid(row=3, column=1, columnspan=3, padx=10, pady=10)
 
-        tk.Label(dialog, text="Пароль:").grid(
+        tk.Label(dialog, text="Пароль:", bg="#D3D3D3").grid(
             row=4, column=0, padx=10, pady=10, sticky="w"
         )
         self.password = tk.Entry(dialog, width=25)
@@ -204,13 +205,13 @@ class BoxPassword(Users, Window):
 
     def register_dialog_window(self, action: str) -> None:
         dialog = self.__dialog_window__(action=action)
-        tk.Label(dialog, text="Логин:").grid(
+        tk.Label(dialog, text="Логин:", bg="#D3D3D3").grid(
             row=0, column=0, padx=10, pady=10, sticky="w"
         )
         self.login = tk.Entry(dialog, width=25)
         self.login.grid(row=0, column=1, columnspan=3, padx=10, pady=10)
 
-        tk.Label(dialog, text="Пароль:").grid(
+        tk.Label(dialog, text="Пароль:", bg="#D3D3D3").grid(
             row=1, column=0, padx=10, pady=10, sticky="w"
         )
         self.password = tk.Entry(dialog, width=25)
