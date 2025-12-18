@@ -1,5 +1,6 @@
 import sqlite3
 import tkinter as tk
+from functools import partial
 from pathlib import Path
 from typing import Dict, List
 
@@ -76,12 +77,14 @@ class BoxPassword(Users, Window):
         super().__init__()
         self.app = create_app
         self.data: Dict[str, str] = {}
+        self.dict_btn: Dict[str, str] = {}
         self.buttons: List = []
         self.label_contents: List = []
 
         self.run()
 
     def content_field(self) -> None:
+        content = tk.Entry()
         self.content_frame = tk.Frame(
             self.window, width=500, height=700, bd=2, bg="#727272"
         )
@@ -94,7 +97,7 @@ class BoxPassword(Users, Window):
                 bg="#727272",
                 font="Arial, 9",
                 fg="white",
-            ).grid(row=0, column=i, ipady=2, ipadx=14, padx=40, pady=1, sticky="n")
+            ).grid(row=0, column=i, ipady=2, ipadx=10, padx=40, pady=1, sticky="n")
 
         tag_hr = tk.LabelFrame(self.content_frame)
         tag_hr.grid(row=1, columnspan=5, sticky="we")
@@ -102,7 +105,7 @@ class BoxPassword(Users, Window):
         try:
             if self.user:
                 items = create_app.get_items(self.user.login)
-                row = 3
+                col = 0
                 for item in items:
                     fields = BoxPass.__table__.columns.keys()
                     for i, field in enumerate(fields):
@@ -123,10 +126,25 @@ class BoxPassword(Users, Window):
                                 self.content_frame, text=value, bg="#9B9B9B", fg="white"
                             )  # type: ignore
                         content.grid(
-                            row=item.id + 1, column=i, pady=1, ipadx=2, sticky="we"
+                            row=item.id + 1, column=i, pady=1, ipadx=0, sticky="we"
                         )
                         self.label_contents.append(content)
-                    row += 1
+
+                    del_btn = tk.Button(
+                        self.content_frame,
+                        text="-",
+                        bg="#FF5252",
+                        fg="#000000",
+                        command=partial(self.delete_password, col),
+                    )
+                    del_btn.grid(
+                        row=item.id + 1, column=len(fields) + 1, padx=3, ipadx=5
+                    )
+                    del_btn.config(borderwidth=0, highlightthickness=0)
+
+                    self.dict_btn.setdefault(del_btn, self.label_contents)  # type: ignore
+                    self.label_contents = []
+                    col += 1
         except TypeError as err:
             print(f"Не найден пользователь\n{err}")
 
@@ -260,12 +278,22 @@ class BoxPassword(Users, Window):
         for btn in self.buttons:
             btn.grid_forget()
 
-        for label in self.label_contents:
-            label.grid_forget()
+        for key, items in self.dict_btn.items():
+            key.grid_forget()  # type: ignore
+            for label in items:
+                label.grid_forget()  # type: ignore
 
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
         self.run()
+
+    def delete_password(self, btn_id: int) -> None:
+        btns: List = list(self.dict_btn.keys())
+        items = self.dict_btn.get(btns[btn_id])
+
+        btns[btn_id].grid_forget()
+        for item in items:  # type: ignore
+            item.grid_forget()  # type: ignore
 
     def create_user(self, dialog: tk.Toplevel):
         self.data.update(
