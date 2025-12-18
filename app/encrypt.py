@@ -7,7 +7,7 @@ hasher = PasswordHasher()
 def hash_password(password: str) -> str:
     """
     Хеширование пароля перед сохранением в БД
-    
+
     :param password: Вводимый пароль пользователем;
     :type password: str
     :return: Возвращает хешированный пароль для сохранения в БД
@@ -19,7 +19,7 @@ def hash_password(password: str) -> str:
 def is_valid_hash(hash_pswd: str, password: str) -> bool:
     """
     Проверка на сравнение вводимого пароля и сохраненного в хеше
-    
+
     :param hash_pswd: хешированный пароль в БД;
     :type hash_pswd: str
     :param password: Вводимы пароль пользователем;

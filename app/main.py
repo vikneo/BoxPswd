@@ -1,7 +1,6 @@
-from pathlib import Path
-
 import sqlite3
 import tkinter as tk
+from pathlib import Path
 from typing import Dict, List
 
 from .app import create_app
@@ -12,7 +11,7 @@ from .models import BoxPass
 
 class Window:
     def __init__(self):
-        self.window: tk.Tk = self.get_window()
+        self.window = self.get_window()
         self.width = self.window.winfo_screenwidth()
         self.height = self.window.winfo_screenheight()
         self.button = tk.Button()
@@ -42,11 +41,11 @@ class Window:
         dialog.grab_set()
         dialog.focus_set()
         return dialog
-    
+
     def get_window(self) -> tk.Tk:
         self.window = tk.Tk()
         return self.window
-    
+
     def instal_icon(self):
         path_dir = Path(__file__).parent.parent / "static"
         icon_file = path_dir / "favicon.png"
@@ -90,15 +89,19 @@ class BoxPassword(Users, Window):
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
-                self.content_frame, text=nav_menu, bg="#727272", font="Arial, 9", fg="white"
+                self.content_frame,
+                text=nav_menu,
+                bg="#727272",
+                font="Arial, 9",
+                fg="white",
             ).grid(row=0, column=i, ipady=2, ipadx=14, padx=40, pady=1, sticky="n")
 
         tag_hr = tk.LabelFrame(self.content_frame)
         tag_hr.grid(row=1, columnspan=5, sticky="we")
 
         try:
-            items = create_app.get_items(self.user.login)
             if self.user:
+                items = create_app.get_items(self.user.login)
                 row = 3
                 for item in items:
                     fields = BoxPass.__table__.columns.keys()
@@ -110,17 +113,22 @@ class BoxPassword(Users, Window):
                             continue
                         if field in ["link", "login", "password"]:
                             content = tk.Entry(
-                                self.content_frame, textvariable=text_var, state='readonly', readonlybackground="#ECE8E8"
+                                self.content_frame,
+                                textvariable=text_var,
+                                state="readonly",
+                                readonlybackground="#ECE8E8",
                             )
                         else:
                             content = tk.Label(
                                 self.content_frame, text=value, bg="#9B9B9B", fg="white"
-                            )
-                        content.grid(row=item.id + 1, column=i, pady=1, ipadx=2, sticky="we")
+                            )  # type: ignore
+                        content.grid(
+                            row=item.id + 1, column=i, pady=1, ipadx=2, sticky="we"
+                        )
                         self.label_contents.append(content)
                     row += 1
-        except:
-            pass
+        except TypeError as err:
+            print(f"Не найден пользователь\n{err}")
 
     def sidebar_field(self) -> None:
         self.side_bar_frame = tk.Frame(
@@ -221,7 +229,9 @@ class BoxPassword(Users, Window):
             bg="blue",
             fg="white",
         )
-        self.button.grid(row=2, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we")
+        self.button.grid(
+            row=2, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we"
+        )
 
         if action.lower() == "авторизация":
             self.button.configure(command=lambda: self.auth_user(dialog))
@@ -249,7 +259,7 @@ class BoxPassword(Users, Window):
     def out_user(self):
         for btn in self.buttons:
             btn.grid_forget()
-        
+
         for label in self.label_contents:
             label.grid_forget()
 
