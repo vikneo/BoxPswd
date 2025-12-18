@@ -70,6 +70,15 @@ class CreateApp:
             except AttributeError as err:
                 print(err)
 
+    def del_password(self, id_p: int) -> None:
+        with self.session as session:
+            try:
+                post = session.query(BoxPass).filter(BoxPass.id == id_p).scalar()
+                session.delete(post)
+                session.commit()
+            except orm.exc.UnmappedInstanceError:
+                raise AttributeError(f"Не верный идентификатор - {id_p}")
+
 
 create_app = CreateApp()
 

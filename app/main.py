@@ -77,7 +77,7 @@ class BoxPassword(Users, Window):
         super().__init__()
         self.app = create_app
         self.data: Dict[str, str] = {}
-        self.dict_btn: Dict[str, str] = {}
+        self.dict_btn: Dict[tk.Button, List[tk.Button]] = {}
         self.buttons: List = []
         self.label_contents: List = []
 
@@ -142,7 +142,7 @@ class BoxPassword(Users, Window):
                     )
                     del_btn.config(borderwidth=0, highlightthickness=0)
 
-                    self.dict_btn.setdefault(del_btn, self.label_contents)  # type: ignore
+                    self.dict_btn.setdefault(del_btn, self.label_contents)
                     self.label_contents = []
                     col += 1
         except TypeError as err:
@@ -279,23 +279,27 @@ class BoxPassword(Users, Window):
             btn.grid_forget()
 
         for key, items in self.dict_btn.items():
-            key.grid_forget()  # type: ignore
+            key.grid_forget()
             for label in items:
-                label.grid_forget()  # type: ignore
+                label.grid_forget()
 
         self.user = None  # type: ignore
         self.window.title("Личный сейф")
         self.run()
 
     def delete_password(self, btn_id: int) -> None:
-        btns: List = list(self.dict_btn.keys())
-        items = self.dict_btn.get(btns[btn_id])
+        try:
+            # create_app.del_password(post_id)
+            btns: List = list(self.dict_btn.keys())
+            items = self.dict_btn.get(btns[btn_id])
+            btns[btn_id].grid_forget()
 
-        btns[btn_id].grid_forget()
-        for item in items:  # type: ignore
-            item.grid_forget()  # type: ignore
+            for item in items:  # type: ignore
+                item.grid_forget()
+        except AttributeError as err:
+            print(err)
 
-    def create_user(self, dialog: tk.Toplevel):
+    def create_user(self, dialog: tk.Toplevel) -> None:
         self.data.update(
             login=self.login.get(),
             password=self.password.get(),
@@ -309,7 +313,7 @@ class BoxPassword(Users, Window):
             pass
         self.run()
 
-    def created_boxpswd(self, dialog: tk.Toplevel):
+    def created_boxpswd(self, dialog: tk.Toplevel) -> None:
         self.data.update(
             link=self.link.get(),
             login=self.login.get(),
