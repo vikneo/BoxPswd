@@ -14,3 +14,6 @@ _engine = create_engine(f"{Settings.DB_HOST}:///{BASE_URI}")
 
 Session = sessionmaker(bind=_engine)
 _session = Session()
+
+
+navbar_list = ["Сайт", "Логин", "Пароль", "Телефон", "Пинкод"]

@@ -1,10 +1,8 @@
-from typing import Any, Optional
-
 from sqlalchemy import engine, exc, inspect, orm
 
 from .config import _engine, _session
 from .encrypt import hash_password
-from .models import Base, User
+from .models import Base, BoxPass, User
 
 
 class CreateApp:
@@ -40,13 +38,46 @@ class CreateApp:
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get('login')} - Существует!")
 
-    def read_user(self, login: str) -> Optional[User | Any]:
+    def created_password(self, data_password: dict) -> None:
+        with self.session as session:
+            try:
+                boxpswd = BoxPass(
+                    link=data_password.get("link"),
+                    login=data_password.get("login"),
+                    password=data_password.get("password"),
+                    phone=data_password.get("phone"),
+                    pincode=data_password.get("pincode"),
+                    user_id=data_password.get("user_id"),
+                )
+                session.add(boxpswd)
+                session.commit()
+            except exc.IntegrityError as err:
+                print(err)
+
+    def get_user(self, login: str):
         with self.session as session:
             try:
                 return session.query(User).filter(User.login == login).scalar()
             except AttributeError as err:
-                raise
                 print(err)
+
+    def get_items(self, login: str):
+        with self.session as session:
+            try:
+                user = session.query(User).filter(User.login == login).first()
+                if user:
+                    return user.boxpasses
+            except AttributeError as err:
+                print(err)
+
+    def del_password(self, id_p: int) -> None:
+        with self.session as session:
+            try:
+                post = session.query(BoxPass).filter(BoxPass.id == id_p).scalar()
+                session.delete(post)
+                session.commit()
+            except orm.exc.UnmappedInstanceError:
+                raise AttributeError(f"Не верный идентификатор - {id_p}")
 
 
 create_app = CreateApp()
@@ -59,5 +90,5 @@ if __name__ == "__main__":
         "password": "qwe123",
     }
     create_app.created_user(data)
-    _user = create_app.read_user("chens")
+    _user = create_app.get_user("chens")
     print(_user)
