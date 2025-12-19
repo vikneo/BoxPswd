@@ -17,8 +17,8 @@ class Window:
         self.height = self.window.winfo_screenheight()
         self.button = tk.Button()
         self.label = tk.Label()
-        self.side_bar_frame = tk.Frame()
-        self.content_frame = tk.Frame()
+        self.side_bar_frame: tk.Frame = tk.Frame()
+        self.content_frame: tk.Frame = tk.Frame()
 
     def __screen_pos__(self):
         """
@@ -105,7 +105,6 @@ class BoxPassword(Users, Window):
         try:
             if self.user:
                 items = create_app.get_items(self.user.login)
-                col = 0
                 for item in items:
                     fields = BoxPass.__table__.columns.keys()
                     for i, field in enumerate(fields):
@@ -135,16 +134,19 @@ class BoxPassword(Users, Window):
                         text="-",
                         bg="#FF5252",
                         fg="#000000",
-                        command=partial(self.delete_password, col),
                     )
                     del_btn.grid(
                         row=item.id + 1, column=len(fields) + 1, padx=3, ipadx=5
                     )
-                    del_btn.config(borderwidth=0, highlightthickness=0)
+                    del_btn.post_id = item.id  # type: ignore
+                    del_btn.config(
+                        command=partial(self.delete_password, del_btn),
+                        borderwidth=0,
+                        highlightthickness=0,
+                    )
 
                     self.dict_btn.setdefault(del_btn, self.label_contents)
                     self.label_contents = []
-                    col += 1
         except TypeError as err:
             print(f"Не найден пользователь\n{err}")
 
@@ -287,15 +289,18 @@ class BoxPassword(Users, Window):
         self.window.title("Личный сейф")
         self.run()
 
-    def delete_password(self, btn_id: int) -> None:
-        try:
-            # create_app.del_password(post_id)
-            btns: List = list(self.dict_btn.keys())
-            items = self.dict_btn.get(btns[btn_id])
-            btns[btn_id].grid_forget()
+    def delete_password(self, btn_del: tk.Button) -> None:
+        print(btn_del)
+        items = self.dict_btn.get(btn_del)
+        self.content_frame.destroy()
+        self.dict_btn.clear()
+        btn_del.destroy()
+        for item in items:  # type: ignore
+            item.destroy()
 
-            for item in items:  # type: ignore
-                item.grid_forget()
+        try:
+            create_app.del_password(btn_del.post_id)  # type: ignore
+            self.run()
         except AttributeError as err:
             print(err)
 
@@ -309,6 +314,8 @@ class BoxPassword(Users, Window):
             self.user = create_app.get_user(self.data["login"])  # type: ignore
             dialog.destroy()
             self.data = {}
+            self.content_frame.destroy()
+            self.dict_btn.clear()
         except sqlite3.IntegrityError:
             pass
         self.run()
@@ -325,6 +332,8 @@ class BoxPassword(Users, Window):
         try:
             create_app.created_password(self.data)
             dialog.destroy()
+            self.content_frame.destroy()
+            self.dict_btn.clear()
             self.data = {}
         except sqlite3.IntegrityError:
             pass
