@@ -32,11 +32,12 @@ def upgrade() -> None:
     sa.UniqueConstraint('login')
     )
     op.create_table('boxpass',
-    sa.Column('link', sa.String(length=500), nullable=False),
+    sa.Column('name_site', sa.String(length=500), default=""),
     sa.Column('login', sa.String(length=100), nullable=True),
     sa.Column('password', sa.String(length=20), nullable=False),
     sa.Column('phone', sa.String(length=15), nullable=True),
     sa.Column('pincode', sa.String(length=10), nullable=True),
+    sa.Column('link', sa.String(length=500), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
