@@ -1,4 +1,3 @@
-import re
 import sqlite3
 import tkinter as tk
 import webbrowser
@@ -109,13 +108,14 @@ class BoxPassword(Users, Window):
                 items = create_app.get_items(self.user.login)
                 for item in items:
                     fields = BoxPass.__table__.columns.keys()
-                    for i, field in enumerate(fields):
+                    i = 0
+                    for field in fields:
                         text_var = tk.StringVar()
                         value = getattr(item, field)
                         text_var.set(value)
-                        if field in ["user_id", "id"]:
+                        if field in ["link", "user_id", "id"]:
                             continue
-                        if field in ["link", "login", "password"]:
+                        elif field in ["name_site", "login", "password"]:
                             content = tk.Entry(
                                 self.content_frame,
                                 textvariable=text_var,
@@ -134,6 +134,7 @@ class BoxPassword(Users, Window):
                             ipadx=4,
                             sticky="we",
                         )
+                        i += 1
                         content.config(borderwidth=0, highlightthickness=0)
                         self.label_contents.append(content)
 
@@ -175,10 +176,7 @@ class BoxPassword(Users, Window):
             print(f"Не найден пользователь\n{err}")
 
     def open_link(self, link):
-
-        if re.search(r"http", link):
-            print(link)
-            webbrowser.open(link)
+        webbrowser.open(link)
 
     def sidebar_field(self) -> None:
         self.side_bar_frame = tk.Frame(
@@ -365,8 +363,10 @@ class BoxPassword(Users, Window):
             self.content_frame.destroy()
             self.dict_btn.clear()
             self.data = {}
-        except sqlite3.IntegrityError:
-            pass
+        except sqlite3.IntegrityError as err:
+            print(err)
+        except IndexError as err:
+            print(err)
         self.run()
 
     def run(self) -> None:
