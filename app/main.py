@@ -1,5 +1,7 @@
+import re
 import sqlite3
 import tkinter as tk
+import webbrowser
 from functools import partial
 from pathlib import Path
 from typing import Dict, List
@@ -88,7 +90,7 @@ class BoxPassword(Users, Window):
         self.content_frame = tk.Frame(
             self.window, width=500, height=700, bd=2, bg="#727272"
         )
-        self.content_frame.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+        self.content_frame.grid(row=0, column=1, padx=10, pady=13, sticky="n")
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
@@ -125,8 +127,14 @@ class BoxPassword(Users, Window):
                                 self.content_frame, text=value, bg="#9B9B9B", fg="white"
                             )  # type: ignore
                         content.grid(
-                            row=item.id + 1, column=i, pady=1, ipadx=0, sticky="we"
+                            row=item.id + 1,
+                            column=i,
+                            pady=0,
+                            padx=2,
+                            ipadx=4,
+                            sticky="we",
                         )
+                        content.config(borderwidth=0, highlightthickness=0)
                         self.label_contents.append(content)
 
                     del_btn = tk.Button(
@@ -136,11 +144,27 @@ class BoxPassword(Users, Window):
                         fg="#000000",
                     )
                     del_btn.grid(
-                        row=item.id + 1, column=len(fields) + 1, padx=3, ipadx=5
+                        row=item.id + 1,
+                        column=len(fields) + 1,
+                        padx=3,
+                        ipadx=5,
+                        pady=1,
                     )
                     del_btn.post_id = item.id  # type: ignore
                     del_btn.config(
                         command=partial(self.delete_password, del_btn),
+                        borderwidth=0,
+                        highlightthickness=0,
+                    )
+                    link_btn = tk.Button(
+                        self.content_frame,
+                        text="->",
+                        bg="#17E74B",
+                        fg="#000000",
+                    )
+                    link_btn.grid(row=item.id + 1, column=len(fields) + 2, pady=1)
+                    link_btn.config(
+                        command=partial(self.open_link, item.link),
                         borderwidth=0,
                         highlightthickness=0,
                     )
@@ -149,6 +173,12 @@ class BoxPassword(Users, Window):
                     self.label_contents = []
         except TypeError as err:
             print(f"Не найден пользователь\n{err}")
+
+    def open_link(self, link):
+
+        if re.search(r"http", link):
+            print(link)
+            webbrowser.open(link)
 
     def sidebar_field(self) -> None:
         self.side_bar_frame = tk.Frame(
@@ -162,7 +192,7 @@ class BoxPassword(Users, Window):
             bg="#D6A3A3",
             command=lambda: self.register_dialog_window("Авторизация"),
         )
-        inp_button.grid(row=0, column=1, ipadx=50, ipady=2, padx=2, pady=1, sticky="n")
+        inp_button.grid(row=0, column=1, ipadx=50, ipady=2, padx=2, pady=6, sticky="n")
 
         create_button = tk.Button(
             self.side_bar_frame,
@@ -182,7 +212,7 @@ class BoxPassword(Users, Window):
                     command=lambda: self.add_password_dialog_window("Добавить пароль"),
                 )
                 add_btn.grid(
-                    row=2, column=1, ipadx=22, ipady=2, padx=3, pady=6, sticky="n"
+                    row=2, column=1, ipadx=20, ipady=2, padx=3, pady=6, sticky="n"
                 )
                 self.buttons.append(add_btn)
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
