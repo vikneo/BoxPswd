@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.types import Integer, String
+from sqlalchemy.types import Integer, String, Boolean
 
 
 class Base(DeclarativeBase):
@@ -27,6 +27,7 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String(100), nullable=True)
     login: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
+    admin: Mapped[bool] = mapped_column(Boolean, default=False)
     boxpasses: Mapped[List["BoxPass"]] = relationship(
         lazy="joined",
         back_populates="user",
@@ -41,6 +42,7 @@ class BoxPass(Base):
 
     __tablename__ = "boxpass"
 
+    name_site: Mapped[str] = mapped_column(String(150), nullable=False)
     link: Mapped[str] = mapped_column(String(500), nullable=False)
     login: Mapped[str] = mapped_column(String(100), nullable=True)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
