@@ -3,7 +3,7 @@ import tkinter as tk
 import webbrowser
 from functools import partial
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from .app import CreateApp, create_app
 from .config import navbar_list
@@ -77,10 +77,11 @@ class BoxPassword(Users, Window):
     def __init__(self):
         super().__init__()
         self.app: CreateApp = create_app
-        self.data: Dict[str, str] = {}
+        self.data: Dict[str, Any] = {}
         self.dict_btn: Dict[tk.Button, List[tk.Label | tk.Entry]] = {}
         self.buttons: List[tk.Button] = []
         self.label_contents: List[tk.Label | tk.Entry] = []
+        self.checkbox_admin: tk.BooleanVar = tk.BooleanVar()
 
         self.run()
 
@@ -270,6 +271,17 @@ class BoxPassword(Users, Window):
         self.password = tk.Entry(dialog, width=25)
         self.password.grid(row=1, column=1, columnspan=3, padx=10, pady=10)
 
+        admin = create_app.get_user_admin()
+        if admin is None and action.lower() == "регистрация":
+            check_box = tk.Checkbutton(
+                dialog,
+                text="Администратор",
+                variable=self.checkbox_admin,
+                bg="#D3D3D3",
+                command=self.get_checkbox_admin,
+            )
+            check_box.grid(row=2, column=1)
+
         self.button = tk.Button(
             dialog,
             text="Войти",
@@ -277,7 +289,7 @@ class BoxPassword(Users, Window):
             fg="white",
         )
         self.button.grid(
-            row=2, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we"
+            row=3, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we"
         )
 
         if action.lower() == "авторизация":
@@ -286,6 +298,9 @@ class BoxPassword(Users, Window):
             self.button.configure(
                 text="Создать", command=lambda: self.create_user(dialog)
             )
+
+    def get_checkbox_admin(self) -> bool:
+        return self.checkbox_admin.get()
 
     def auth_user(self, dialog: tk.Toplevel | None) -> None:
         self.data.update(
@@ -334,7 +349,9 @@ class BoxPassword(Users, Window):
         self.data.update(
             login=self.login.get(),
             password=self.password.get(),
+            admin=self.get_checkbox_admin(),
         )
+        print(self.data)
         try:
             create_app.created_user(self.data)  # type: ignore
             self.user = create_app.get_user(self.data["login"])  # type: ignore
