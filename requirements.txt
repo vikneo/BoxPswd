@@ -9,3 +9,5 @@ flake8-pie
 isort
 mypy
 py-make
+web-browser
+browserdriver

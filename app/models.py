@@ -1,8 +1,14 @@
 from typing import List
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
-from sqlalchemy.types import Integer, String
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    mapped_column,
+    relationship,
+    validates,
+)
+from sqlalchemy.types import Boolean, Integer, String
 
 
 class Base(DeclarativeBase):
@@ -27,6 +33,7 @@ class User(Base):
     last_name: Mapped[str] = mapped_column(String(100), nullable=True)
     login: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
+    admin: Mapped[bool] = mapped_column(Boolean, nullable=True)
     boxpasses: Mapped[List["BoxPass"]] = relationship(
         lazy="joined",
         back_populates="user",
@@ -36,11 +43,17 @@ class User(Base):
     def __repr__(self) -> str:
         return f"{self.first_name} {self.last_name}: - {self.login}"
 
+    @validates("password")
+    def valid_password(self, key: str, value: str) -> str:
+        print(key, value)
+        return value
+
 
 class BoxPass(Base):
 
     __tablename__ = "boxpass"
 
+    name_site: Mapped[str] = mapped_column(String(150), default="", nullable=True)
     link: Mapped[str] = mapped_column(String(500), nullable=False)
     login: Mapped[str] = mapped_column(String(100), nullable=True)
     password: Mapped[str] = mapped_column(String(20), nullable=False)
@@ -52,4 +65,4 @@ class BoxPass(Base):
     user: Mapped[User] = relationship(back_populates="boxpasses")
 
     def __repr__(self) -> str:
-        return f"{self.user_id} - {self.link}"
+        return f"{self.user_id} - {self.name_site}"

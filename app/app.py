@@ -1,6 +1,6 @@
 from sqlalchemy import engine, exc, inspect, orm
 
-from .config import _engine, _session
+from .config import eng, ses
 from .encrypt import hash_password
 from .models import Base, BoxPass, User
 
@@ -9,18 +9,18 @@ class CreateApp:
 
     def __init__(
         self,
-        engin: engine.base.Engine = _engine,
-        sess: orm.session.Session = _session,
+        engin: engine.base.Engine = eng,
+        sess: orm.session.Session = ses,
     ) -> None:
         self.engine = engin
         self.session = sess
 
-    table_name = inspect(_engine).get_table_names()
+    table_name = inspect(eng).get_table_names()
     if not table_name:
-        Base.metadata.create_all(_engine)
+        Base.metadata.create_all(eng)
 
-    def created_user(self, data_user: dict) -> None:
-        password = data_user.get("password")
+    def created_user(self, data_user: dict[str, str]) -> None:
+        password: str = data_user["password"]
         if not password:
             raise ValueError("Пароль должен быть не пустой")
 
@@ -38,7 +38,7 @@ class CreateApp:
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get('login')} - Существует!")
 
-    def created_password(self, data_password: dict) -> None:
+    def created_password(self, data_password: dict[str, str]) -> None:
         with self.session as session:
             try:
                 boxpswd = BoxPass(
@@ -80,7 +80,7 @@ class CreateApp:
                 raise AttributeError(f"Не верный идентификатор - {id_p}")
 
 
-create_app = CreateApp()
+create_app: CreateApp = CreateApp()
 
 if __name__ == "__main__":
     data = {
