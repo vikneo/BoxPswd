@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import Path
 from typing import Dict, List
 
-from .app import create_app, CreateApp
+from .app import CreateApp, create_app
 from .config import navbar_list
 from .encrypt import is_valid_hash
 from .models import BoxPass
@@ -85,7 +85,6 @@ class BoxPassword(Users, Window):
         self.run()
 
     def content_field(self) -> None:
-        content = tk.Entry()
         self.content_frame = tk.Frame(
             self.window, width=500, height=700, bd=2, bg="#727272"
         )

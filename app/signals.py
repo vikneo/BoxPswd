@@ -1,7 +1,8 @@
+from typing import List
+
 from sqlalchemy import event
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.mapper import Mapper
-from typing import List
 
 from .models import BoxPass
 
