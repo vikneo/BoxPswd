@@ -44,7 +44,7 @@ class User(Base):
         return f"{self.first_name} {self.last_name}: - {self.login}"
 
     @validates("password")
-    def valid_password(self, key, value):
+    def valid_password(self, key: str, value: str) -> str:
         print(key, value)
         return value
 

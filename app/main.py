@@ -5,7 +5,7 @@ from functools import partial
 from pathlib import Path
 from typing import Dict, List
 
-from .app import create_app
+from .app import create_app, CreateApp
 from .config import navbar_list
 from .encrypt import is_valid_hash
 from .models import BoxPass
@@ -76,11 +76,11 @@ class BoxPassword(Users, Window):
 
     def __init__(self):
         super().__init__()
-        self.app = create_app
+        self.app: CreateApp = create_app
         self.data: Dict[str, str] = {}
-        self.dict_btn: Dict[tk.Button, List[tk.Button]] = {}
-        self.buttons: List = []
-        self.label_contents: List = []
+        self.dict_btn: Dict[tk.Button, List[tk.Label | tk.Entry]] = {}
+        self.buttons: List[tk.Button] = []
+        self.label_contents: List[tk.Label | tk.Entry] = []
 
         self.run()
 
@@ -105,8 +105,8 @@ class BoxPassword(Users, Window):
 
         try:
             if self.user:
-                items = create_app.get_items(self.user.login)
-                for item in items:
+                items: List[BoxPass] | None = create_app.get_items(self.user.login)
+                for item in items if items else []:
                     fields = BoxPass.__table__.columns.keys()
                     i = 0
                     for field in fields:
@@ -116,7 +116,7 @@ class BoxPassword(Users, Window):
                         if field in ["link", "user_id", "id"]:
                             continue
                         elif field in ["name_site", "login", "password"]:
-                            content = tk.Entry(
+                            content: tk.Entry = tk.Entry(
                                 self.content_frame,
                                 textvariable=text_var,
                                 state="readonly",
@@ -175,7 +175,7 @@ class BoxPassword(Users, Window):
         except TypeError as err:
             print(f"Не найден пользователь\n{err}")
 
-    def open_link(self, link):
+    def open_link(self, link: str) -> None:
         webbrowser.open(link)
 
     def sidebar_field(self) -> None:
@@ -318,7 +318,6 @@ class BoxPassword(Users, Window):
         self.run()
 
     def delete_password(self, btn_del: tk.Button) -> None:
-        print(btn_del)
         items = self.dict_btn.get(btn_del)
         self.content_frame.destroy()
         self.dict_btn.clear()
