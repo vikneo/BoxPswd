@@ -300,6 +300,9 @@ class BoxPassword(Users, Window):
             )
 
     def get_checkbox_admin(self) -> bool:
+        if create_app.get_user_admin() is None:
+            return self.checkbox_admin.get()
+        self.checkbox_admin.set(False)
         return self.checkbox_admin.get()
 
     def auth_user(self, dialog: tk.Toplevel | None) -> None:
@@ -351,7 +354,6 @@ class BoxPassword(Users, Window):
             password=self.password.get(),
             admin=self.get_checkbox_admin(),
         )
-        print(self.data)
         try:
             create_app.created_user(self.data)  # type: ignore
             self.user = create_app.get_user(self.data["login"])  # type: ignore
@@ -389,7 +391,9 @@ class BoxPassword(Users, Window):
         self.content_field()
         try:
             if self.user:
-                self.window.title(f"Личный сейф - {self.user.login.capitalize()}")
+                self.window.title(
+                    f"Личный сейф - {self.user.login.capitalize()}{'(Admin)'if self.user.admin else ''}"
+                )
         except AttributeError as err:
             print(err)
 
