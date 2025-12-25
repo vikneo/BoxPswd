@@ -1,3 +1,5 @@
+from typing import Any
+
 from sqlalchemy import engine, exc, inspect, orm
 
 from .config import eng, ses
@@ -31,6 +33,7 @@ class CreateApp:
                     last_name=data_user.get("last_name"),
                     first_name=data_user.get("first_name"),
                     login=data_user.get("login"),
+                    admin=data_user.get("admin"),
                     password=hash_p,
                 )
                 session.add(new_user)
@@ -53,6 +56,10 @@ class CreateApp:
                 session.commit()
             except exc.IntegrityError as err:
                 print(err)
+
+    def get_user_admin(self) -> Any:
+        with self.session as session:
+            return session.query(User).where(User.admin).scalar()
 
     def get_user(self, login: str):
         with self.session as session:
