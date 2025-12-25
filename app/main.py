@@ -28,12 +28,12 @@ class Window:
         """
         self.width = self.width // 6
         self.height = (self.height * 0) + 10
-        self.window.geometry(f"955x600+{self.width}+{self.height}")
-        self.window.resizable(width=False, height=False)
+        self.window.geometry(f"955x900+{self.width}+{self.height}")
+        self.window.resizable(width=True, height=False)
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
 
-    def __dialog_window__(self, action: str, height: str = "145") -> tk.Toplevel:
+    def __dialog_window__(self, action: str, height: str = "165") -> tk.Toplevel:
         dialog = tk.Toplevel()
         dialog.title(action)
         dialog.transient(self.window)
@@ -48,7 +48,7 @@ class Window:
         self.window = tk.Tk()
         return self.window
 
-    def instal_icon(self):
+    def install_icon(self):
         path_dir = Path(__file__).parent.parent / "static"
         icon_file = path_dir / "favicon.png"
         icon = tk.PhotoImage(file=icon_file)
@@ -56,7 +56,7 @@ class Window:
 
     def mainloop(self):
         self.__screen_pos__()
-        self.instal_icon()
+        self.install_icon()
         self.window.mainloop()
 
 
@@ -190,7 +190,7 @@ class BoxPassword(Users, Window):
             bg="#D6A3A3",
             command=lambda: self.register_dialog_window("Авторизация"),
         )
-        inp_button.grid(row=0, column=1, ipadx=50, ipady=2, padx=2, pady=6, sticky="n")
+        inp_button.grid(row=0, column=1, ipadx=53, ipady=2, padx=2, pady=6, sticky="n")
 
         create_button = tk.Button(
             self.side_bar_frame,
@@ -198,9 +198,7 @@ class BoxPassword(Users, Window):
             bg="#A1AAA2",
             command=lambda: self.register_dialog_window("Регистрация"),
         )
-        create_button.grid(
-            row=1, column=1, ipadx=6, ipady=2, padx=3, pady=6, sticky="n"
-        )
+        create_button.grid(row=1, column=1, ipady=2, padx=6, pady=6, sticky="n")
         try:
             if self.user:
                 add_btn = tk.Button(
@@ -210,7 +208,7 @@ class BoxPassword(Users, Window):
                     command=lambda: self.add_password_dialog_window("Добавить пароль"),
                 )
                 add_btn.grid(
-                    row=2, column=1, ipadx=20, ipady=2, padx=3, pady=6, sticky="n"
+                    row=2, column=1, ipadx=16, ipady=2, padx=3, pady=6, sticky="n"
                 )
                 self.buttons.append(add_btn)
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
@@ -280,7 +278,7 @@ class BoxPassword(Users, Window):
                 bg="#D3D3D3",
                 command=self.get_checkbox_admin,
             )
-            check_box.grid(row=2, column=1)
+            check_box.grid(row=2, column=1, pady=0, ipady=0)
 
         self.button = tk.Button(
             dialog,
@@ -289,7 +287,7 @@ class BoxPassword(Users, Window):
             fg="white",
         )
         self.button.grid(
-            row=3, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we"
+            row=3, column=1, columnspan=2, ipadx=15, padx=15, pady=6, sticky="we"
         )
 
         if action.lower() == "авторизация":
