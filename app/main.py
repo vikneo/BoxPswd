@@ -1,10 +1,11 @@
 import sqlite3
 import tkinter as tk
+import webbrowser
 from functools import partial
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
-from .app import create_app
+from .app import CreateApp, create_app
 from .config import navbar_list
 from .encrypt import is_valid_hash
 from .models import BoxPass
@@ -27,12 +28,12 @@ class Window:
         """
         self.width = self.width // 6
         self.height = (self.height * 0) + 10
-        self.window.geometry(f"955x600+{self.width}+{self.height}")
-        self.window.resizable(width=False, height=False)
+        self.window.geometry(f"955x900+{self.width}+{self.height}")
+        self.window.resizable(width=True, height=False)
         self.window.title("Личный сейф")
         self.window.configure(background="#D3D3D3")
 
-    def __dialog_window__(self, action: str, height: str = "145") -> tk.Toplevel:
+    def __dialog_window__(self, action: str, height: str = "165") -> tk.Toplevel:
         dialog = tk.Toplevel()
         dialog.title(action)
         dialog.transient(self.window)
@@ -47,7 +48,7 @@ class Window:
         self.window = tk.Tk()
         return self.window
 
-    def instal_icon(self):
+    def install_icon(self):
         path_dir = Path(__file__).parent.parent / "static"
         icon_file = path_dir / "favicon.png"
         icon = tk.PhotoImage(file=icon_file)
@@ -55,7 +56,7 @@ class Window:
 
     def mainloop(self):
         self.__screen_pos__()
-        self.instal_icon()
+        self.install_icon()
         self.window.mainloop()
 
 
@@ -75,20 +76,20 @@ class BoxPassword(Users, Window):
 
     def __init__(self):
         super().__init__()
-        self.app = create_app
-        self.data: Dict[str, str] = {}
-        self.dict_btn: Dict[tk.Button, List[tk.Button]] = {}
-        self.buttons: List = []
-        self.label_contents: List = []
+        self.app: CreateApp = create_app
+        self.data: Dict[str, Any] = {}
+        self.dict_btn: Dict[tk.Button, List[tk.Label | tk.Entry]] = {}
+        self.buttons: List[tk.Button] = []
+        self.label_contents: List[tk.Label | tk.Entry] = []
+        self.checkbox_admin: tk.BooleanVar = tk.BooleanVar()
 
         self.run()
 
     def content_field(self) -> None:
-        content = tk.Entry()
         self.content_frame = tk.Frame(
             self.window, width=500, height=700, bd=2, bg="#727272"
         )
-        self.content_frame.grid(row=0, column=1, padx=10, pady=10, sticky="n")
+        self.content_frame.grid(row=0, column=1, padx=10, pady=13, sticky="n")
 
         for i, nav_menu in enumerate(navbar_list):
             tk.Label(
@@ -104,17 +105,18 @@ class BoxPassword(Users, Window):
 
         try:
             if self.user:
-                items = create_app.get_items(self.user.login)
-                for item in items:
+                items: List[BoxPass] | None = create_app.get_items(self.user.login)
+                for item in items if items else []:
                     fields = BoxPass.__table__.columns.keys()
-                    for i, field in enumerate(fields):
+                    i = 0
+                    for field in fields:
                         text_var = tk.StringVar()
                         value = getattr(item, field)
                         text_var.set(value)
-                        if field in ["user_id", "id"]:
+                        if field in ["link", "user_id", "id"]:
                             continue
-                        if field in ["link", "login", "password"]:
-                            content = tk.Entry(
+                        elif field in ["name_site", "login", "password"]:
+                            content: tk.Entry = tk.Entry(
                                 self.content_frame,
                                 textvariable=text_var,
                                 state="readonly",
@@ -125,8 +127,15 @@ class BoxPassword(Users, Window):
                                 self.content_frame, text=value, bg="#9B9B9B", fg="white"
                             )  # type: ignore
                         content.grid(
-                            row=item.id + 1, column=i, pady=1, ipadx=0, sticky="we"
+                            row=item.id + 1,
+                            column=i,
+                            pady=0,
+                            padx=2,
+                            ipadx=4,
+                            sticky="we",
                         )
+                        i += 1
+                        content.config(borderwidth=0, highlightthickness=0)
                         self.label_contents.append(content)
 
                     del_btn = tk.Button(
@@ -136,11 +145,27 @@ class BoxPassword(Users, Window):
                         fg="#000000",
                     )
                     del_btn.grid(
-                        row=item.id + 1, column=len(fields) + 1, padx=3, ipadx=5
+                        row=item.id + 1,
+                        column=len(fields) + 1,
+                        padx=3,
+                        ipadx=5,
+                        pady=1,
                     )
                     del_btn.post_id = item.id  # type: ignore
                     del_btn.config(
                         command=partial(self.delete_password, del_btn),
+                        borderwidth=0,
+                        highlightthickness=0,
+                    )
+                    link_btn = tk.Button(
+                        self.content_frame,
+                        text="->",
+                        bg="#17E74B",
+                        fg="#000000",
+                    )
+                    link_btn.grid(row=item.id + 1, column=len(fields) + 2, pady=1)
+                    link_btn.config(
+                        command=partial(self.open_link, item.link),
                         borderwidth=0,
                         highlightthickness=0,
                     )
@@ -149,6 +174,9 @@ class BoxPassword(Users, Window):
                     self.label_contents = []
         except TypeError as err:
             print(f"Не найден пользователь\n{err}")
+
+    def open_link(self, link: str) -> None:
+        webbrowser.open(link)
 
     def sidebar_field(self) -> None:
         self.side_bar_frame = tk.Frame(
@@ -162,7 +190,7 @@ class BoxPassword(Users, Window):
             bg="#D6A3A3",
             command=lambda: self.register_dialog_window("Авторизация"),
         )
-        inp_button.grid(row=0, column=1, ipadx=50, ipady=2, padx=2, pady=1, sticky="n")
+        inp_button.grid(row=0, column=1, ipadx=53, ipady=2, padx=2, pady=6, sticky="n")
 
         create_button = tk.Button(
             self.side_bar_frame,
@@ -170,9 +198,7 @@ class BoxPassword(Users, Window):
             bg="#A1AAA2",
             command=lambda: self.register_dialog_window("Регистрация"),
         )
-        create_button.grid(
-            row=1, column=1, ipadx=6, ipady=2, padx=3, pady=6, sticky="n"
-        )
+        create_button.grid(row=1, column=1, ipady=2, padx=6, pady=6, sticky="n")
         try:
             if self.user:
                 add_btn = tk.Button(
@@ -182,7 +208,7 @@ class BoxPassword(Users, Window):
                     command=lambda: self.add_password_dialog_window("Добавить пароль"),
                 )
                 add_btn.grid(
-                    row=2, column=1, ipadx=22, ipady=2, padx=3, pady=6, sticky="n"
+                    row=2, column=1, ipadx=16, ipady=2, padx=3, pady=6, sticky="n"
                 )
                 self.buttons.append(add_btn)
                 inp_button.config(text="Выйти", bg="#87F087", command=self.out_user)
@@ -243,6 +269,17 @@ class BoxPassword(Users, Window):
         self.password = tk.Entry(dialog, width=25)
         self.password.grid(row=1, column=1, columnspan=3, padx=10, pady=10)
 
+        admin = create_app.get_user_admin()
+        if admin is None and action.lower() == "регистрация":
+            check_box = tk.Checkbutton(
+                dialog,
+                text="Администратор",
+                variable=self.checkbox_admin,
+                bg="#D3D3D3",
+                command=self.get_checkbox_admin,
+            )
+            check_box.grid(row=2, column=1, pady=0, ipady=0)
+
         self.button = tk.Button(
             dialog,
             text="Войти",
@@ -250,7 +287,7 @@ class BoxPassword(Users, Window):
             fg="white",
         )
         self.button.grid(
-            row=2, column=1, columnspan=3, ipadx=15, padx=15, pady=10, sticky="we"
+            row=3, column=1, columnspan=2, ipadx=15, padx=15, pady=6, sticky="we"
         )
 
         if action.lower() == "авторизация":
@@ -259,6 +296,12 @@ class BoxPassword(Users, Window):
             self.button.configure(
                 text="Создать", command=lambda: self.create_user(dialog)
             )
+
+    def get_checkbox_admin(self) -> bool:
+        if create_app.get_user_admin() is None:
+            return self.checkbox_admin.get()
+        self.checkbox_admin.set(False)
+        return self.checkbox_admin.get()
 
     def auth_user(self, dialog: tk.Toplevel | None) -> None:
         self.data.update(
@@ -290,7 +333,6 @@ class BoxPassword(Users, Window):
         self.run()
 
     def delete_password(self, btn_del: tk.Button) -> None:
-        print(btn_del)
         items = self.dict_btn.get(btn_del)
         self.content_frame.destroy()
         self.dict_btn.clear()
@@ -308,6 +350,7 @@ class BoxPassword(Users, Window):
         self.data.update(
             login=self.login.get(),
             password=self.password.get(),
+            admin=self.get_checkbox_admin(),
         )
         try:
             create_app.created_user(self.data)  # type: ignore
@@ -335,8 +378,10 @@ class BoxPassword(Users, Window):
             self.content_frame.destroy()
             self.dict_btn.clear()
             self.data = {}
-        except sqlite3.IntegrityError:
-            pass
+        except sqlite3.IntegrityError as err:
+            print(err)
+        except IndexError as err:
+            print(err)
         self.run()
 
     def run(self) -> None:
@@ -344,7 +389,9 @@ class BoxPassword(Users, Window):
         self.content_field()
         try:
             if self.user:
-                self.window.title(f"Личный сейф - {self.user.login.capitalize()}")
+                self.window.title(
+                    f"Личный сейф - {self.user.login.capitalize()}{'(Admin)'if self.user.admin else ''}"
+                )
         except AttributeError as err:
             print(err)
 

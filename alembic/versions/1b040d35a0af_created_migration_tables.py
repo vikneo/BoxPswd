@@ -1,8 +1,8 @@
-"""add fields: phone and pincode
+"""created migration tables
 
-Revision ID: 5083f1f86cb2
+Revision ID: 1b040d35a0af
 Revises: b42044fb385d
-Create Date: 2025-12-16 15:59:20.426060
+Create Date: 2025-12-22 20:49:20.971030
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '5083f1f86cb2'
+revision: str = '1b040d35a0af'
 down_revision: Union[str, None] = 'b42044fb385d'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -26,12 +26,14 @@ def upgrade() -> None:
     sa.Column('last_name', sa.String(length=100), nullable=True),
     sa.Column('login', sa.String(length=100), nullable=False),
     sa.Column('password', sa.String(length=20), nullable=False),
+    sa.Column('admin', sa.Boolean(), nullable=True),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('id'),
     sa.UniqueConstraint('login')
     )
     op.create_table('boxpass',
+    sa.Column('name_site', sa.String(length=150), nullable=True),
     sa.Column('link', sa.String(length=500), nullable=False),
     sa.Column('login', sa.String(length=100), nullable=True),
     sa.Column('password', sa.String(length=20), nullable=False),

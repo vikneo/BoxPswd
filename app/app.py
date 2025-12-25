@@ -1,6 +1,8 @@
+from typing import Any
+
 from sqlalchemy import engine, exc, inspect, orm
 
-from .config import _engine, _session
+from .config import eng, ses
 from .encrypt import hash_password
 from .models import Base, BoxPass, User
 
@@ -9,18 +11,18 @@ class CreateApp:
 
     def __init__(
         self,
-        engin: engine.base.Engine = _engine,
-        sess: orm.session.Session = _session,
+        engin: engine.base.Engine = eng,
+        sess: orm.session.Session = ses,
     ) -> None:
         self.engine = engin
         self.session = sess
 
-    table_name = inspect(_engine).get_table_names()
+    table_name = inspect(eng).get_table_names()
     if not table_name:
-        Base.metadata.create_all(_engine)
+        Base.metadata.create_all(eng)
 
-    def created_user(self, data_user: dict) -> None:
-        password = data_user.get("password")
+    def created_user(self, data_user: dict[str, str]) -> None:
+        password: str = data_user["password"]
         if not password:
             raise ValueError("Пароль должен быть не пустой")
 
@@ -31,6 +33,7 @@ class CreateApp:
                     last_name=data_user.get("last_name"),
                     first_name=data_user.get("first_name"),
                     login=data_user.get("login"),
+                    admin=data_user.get("admin"),
                     password=hash_p,
                 )
                 session.add(new_user)
@@ -38,7 +41,7 @@ class CreateApp:
             except exc.IntegrityError:
                 print(f"Пользователь с логином {data_user.get('login')} - Существует!")
 
-    def created_password(self, data_password: dict) -> None:
+    def created_password(self, data_password: dict[str, str]) -> None:
         with self.session as session:
             try:
                 boxpswd = BoxPass(
@@ -53,6 +56,10 @@ class CreateApp:
                 session.commit()
             except exc.IntegrityError as err:
                 print(err)
+
+    def get_user_admin(self) -> Any:
+        with self.session as session:
+            return session.query(User).where(User.admin).scalar()
 
     def get_user(self, login: str):
         with self.session as session:
@@ -80,7 +87,7 @@ class CreateApp:
                 raise AttributeError(f"Не верный идентификатор - {id_p}")
 
 
-create_app = CreateApp()
+create_app: CreateApp = CreateApp()
 
 if __name__ == "__main__":
     data = {
